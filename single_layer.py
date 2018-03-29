@@ -40,5 +40,5 @@ np.set_printoptions(formatter={'float_kind':'{:f}'.format})
 print("Model: output = input * weight + bias\nweight = {0}\nbias = {1}".format(sess.run(weight), sess.run(bias)))
 print("Accuracy: {0}".format(accuracy))
 
-print("{0}\n\n{1}\n\n{2}".format(batch_xs[0], batch_ys[0], sess.run(tf.matmul(batch_xs, weight) + bias)[0]))
+#print("{0}\n\n{1}\n\n{2}".format(batch_xs[0], batch_ys[0], sess.run(tf.matmul(batch_xs, weight) + bias)[0]))
 sess.close()
