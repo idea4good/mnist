@@ -30,15 +30,15 @@ for i in range(1000):
 	batch_xs, batch_ys = mnist_data.train.next_batch(100) # get 100 random training data
 	sess.run(train_step, feed_dict={x: batch_xs, y:batch_ys}) # optimize the loss with data
 
+# ouput model data
+np.set_printoptions(threshold=np.inf) # output all data without ellopsis
+np.set_printoptions(formatter={'float_kind':'{:f}'.format}) # float format
+print("Model: output = input * weight + bias\nweight = {0}\nbias = {1}".format(sess.run(weight), sess.run(bias)))
+
 # evaluate accuracy with test data
 correct_prediction = tf.equal(tf.argmax(y_predic, 1), tf.argmax(y, 1))
 get_accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 accuracy = sess.run(get_accuracy, feed_dict={x: mnist_data.test.images, y: mnist_data.test.labels})
-
-np.set_printoptions(threshold=np.inf) # output all data without ellopsis
-np.set_printoptions(formatter={'float_kind':'{:f}'.format})
-print("Model: output = input * weight + bias\nweight = {0}\nbias = {1}".format(sess.run(weight), sess.run(bias)))
-print("Accuracy: {0}".format(accuracy))
-
+print("------------------------------------\nAccuracy: {0}".format(accuracy))
 #print("{0}\n\n{1}\n\n{2}".format(batch_xs[0], batch_ys[0], sess.run(tf.matmul(batch_xs, weight) + bias)[0]))
 sess.close()
