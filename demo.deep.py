@@ -1,29 +1,34 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+import matplotlib.patches as patches
 
 image_width = 28
 image_height = 28
 image = np.zeros(shape=(image_height, image_width))
 image_1d = np.zeros(shape=(1, image_height * image_width))
-gray = 0.8
+gray = 0.9
 isMouseDown = False
-mouseX = []
-mouseY = []
 
 def UpdateImage(x, y):
     #print("x:{0}, y:{1}".format(x, y))
     if(type(x) == None.__class__ or type(x) == None.__class__):
         return
+    x = int(round(x))
+    y = int(round(y))
+    image_y = -(y + 1)
+    if (image_y - 2) < 0 or image_y >= image_height or (x + 2) >= image_width:
+        return
+
+    axes.add_patch(patches.Rectangle((x , y), 3, 3))
+    plt.draw()
+
+    image[image_y][x] = image[image_y][x + 1] = image[image_y][x + 2] = gray
+    image[image_y - 1][x] = image[image_y - 1][x + 1] = image[image_y - 1][x + 2] = gray    
+    image[image_y - 2 ][x] = image[image_y - 2][x + 1] = image[image_y - 2][x + 2] = gray
     
-    y = -y;
-    image[int(y - 1)][int(x)] = image[int(y - 1)][int(x - 1)] = image[int(y - 1)][int(x + 1)] = gray    # xxx
-    image[int(y)][int(x)] = image[int(y)][int(x - 1)] = image[int(y)][int(x + 1)] = gray                # xxx
-    image[int(y + 1)][int(x)] = image[int(y + 1)][int(x - 1)] = image[int(y + 1)][int(x + 1)] = gray    # xxx
-    
-def UpdateUI(result):
-    line.set_xdata(mouseX)
-    line.set_ydata(mouseY)
+def update_figure(result):
     if result == -1:
         plt.title("")
     else:
@@ -38,10 +43,9 @@ def OnClick(event):
 def OnRelease(event):
     global image, image_1d, isMouseDown
     if event.button == 3: # right
-        del mouseX[:]
-        del mouseY[:]
         image = np.zeros(shape=(image_height, image_width))
-        UpdateUI(-1)
+        reset_axis(axes)
+        update_figure(-1)
     if event.button == 1: # left
         isMouseDown = False;
         recognize()
@@ -52,10 +56,8 @@ def OnRelease(event):
 def OnMotion(event):
     global isMouseDown
     if (isMouseDown):
-       mouseX.append(event.xdata)
-       mouseY.append(event.ydata)
        UpdateImage(event.xdata, event.ydata)
-       UpdateUI(-1)
+       update_figure(-1)
 
 w_conv1 = tf.Variable(tf.zeros([5, 5, 1, 32]), name = "w_conv1")
 b_conv1 = tf.Variable(tf.zeros([32]), name = "b_conv1")
@@ -93,7 +95,19 @@ def recognize():
         h_fc1_drop = tf.nn.dropout(h_fc1, 1.0)
         prediction = tf.matmul(h_fc1_drop, w_fc2) + b_fc2
     
-        UpdateUI(sess.run(tf.argmax(prediction, 1)))
+        update_figure(sess.run(tf.argmax(prediction, 1)))
+
+def reset_axis(axes):
+    plt.cla()
+    axes.set_xlim(0, image_width)
+    axes.xaxis.set_major_locator(MultipleLocator(4))
+    axes.xaxis.set_minor_locator(MultipleLocator(1))
+    axes.xaxis.grid(True, which='minor')
+
+    axes.set_ylim(-image_height, 0)
+    axes.yaxis.set_major_locator(MultipleLocator(4))
+    axes.yaxis.set_minor_locator(MultipleLocator(1))
+    axes.yaxis.grid(True, which='minor')    
 
 fig = plt.figure()
 fig.canvas.mpl_connect('button_press_event', OnClick)
@@ -102,8 +116,6 @@ fig.canvas.mpl_connect('motion_notify_event', OnMotion)
 
 plt.gca().set_aspect('equal', adjustable='box')
 axes = plt.gca()
-axes.set_xlim(0, image_width - 1)
-axes.set_ylim(-(image_height - 1), 0)
-line, = axes.plot(mouseX, mouseY, 'b-', lw=20)
+reset_axis(axes)
 
 plt.show()
