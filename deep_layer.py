@@ -91,4 +91,6 @@ print('Save model here: {0}'.format(saver.save(sess, "checkpoint/save")))
 # evaluate accuracy with test data
 print ('------------------------------------\nAccuracy = {0:.3f}%'.format(accuracy.eval(feed_dict = {x: mnist_data.test.images, y: mnist_data.test.labels, keep_prob: 1.0})*100))
 
+writer = tf.summary.FileWriter('./tensorboard-deep', sess.graph)
+writer.close()
 sess.close()

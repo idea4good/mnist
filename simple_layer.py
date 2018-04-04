@@ -41,4 +41,7 @@ get_accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 accuracy = sess.run(get_accuracy, feed_dict={x: mnist_data.test.images, y: mnist_data.test.labels})
 print("------------------------------------\nAccuracy: {0}".format(accuracy))
 #print("{0}\n\n{1}\n\n{2}".format(batch_xs[0], batch_ys[0], sess.run(tf.matmul(batch_xs, weight) + bias)[0]))
+
+writer = tf.summary.FileWriter('./tensorboard-simple', sess.graph)
+writer.close()
 sess.close()

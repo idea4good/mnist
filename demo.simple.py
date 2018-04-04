@@ -39,6 +39,7 @@ def OnClick(event):
     global isMouseDown
     if event.button == 1: # left
         isMouseDown = True;
+        UpdateImage(event.xdata, event.ydata)
 
 def OnRelease(event):
     global image, image_1d, isMouseDown
