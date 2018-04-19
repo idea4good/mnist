@@ -25,10 +25,17 @@ init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 
+# tensorboard
+tf.summary.scalar('weight', weight[0, 0])
+tf.summary.scalar('bias', bias[0])
+merged = tf.summary.merge_all()
+writer = tf.summary.FileWriter('./tensorboard-simple', sess.graph)
+
 # training
 for i in range(1000):
 	batch_xs, batch_ys = mnist_data.train.next_batch(100) # get 100 random training data
-	sess.run(train_step, feed_dict={x: batch_xs, y:batch_ys}) # optimize the loss with data
+	_, single_summary = sess.run([train_step, merged], feed_dict={x: batch_xs, y:batch_ys}) # optimize the loss with data
+	writer.add_summary(single_summary, i)
 
 # ouput model data
 np.set_printoptions(threshold=np.inf) # output all data without ellopsis
@@ -42,6 +49,4 @@ accuracy = sess.run(get_accuracy, feed_dict={x: mnist_data.test.images, y: mnist
 print("------------------------------------\nAccuracy: {0}".format(accuracy))
 #print("{0}\n\n{1}\n\n{2}".format(batch_xs[0], batch_ys[0], sess.run(tf.matmul(batch_xs, weight) + bias)[0]))
 
-writer = tf.summary.FileWriter('./tensorboard-simple', sess.graph)
-writer.close()
 sess.close()
