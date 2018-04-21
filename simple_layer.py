@@ -26,8 +26,9 @@ sess = tf.Session()
 sess.run(init)
 
 # tensorboard
-tf.summary.scalar('weight', weight[0, 0])
-tf.summary.scalar('bias', bias[0])
+tf.summary.scalar('loss', cross_entropy)
+tf.summary.histogram('wegith', weight)
+tf.summary.histogram('bias', bias)
 merged = tf.summary.merge_all()
 writer = tf.summary.FileWriter('./tensorboard-simple', sess.graph)
 
