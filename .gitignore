@@ -100,7 +100,4 @@ ENV/
 # mypy
 .mypy_cache/
 
-/MNIST_data/
-/checkpoint/
-/tensorboard-deep/
-/tensorboard-simple/
+/logs/

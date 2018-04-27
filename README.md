@@ -1,19 +1,15 @@
 # mnist
 Recognize handwritten digits in real time.
 
+## Working like this:
 ![python](mnist.gif)
+
+## Show all detail of CNN layer
+![Output](output.png)
 
 ## Quick start
 - install python
 - install python packages: numpy matplotlib
-- run: python demo.simple.py
-
-## How to build & run 1 layer neural network
 - install tensorflow
-- run: python simples_layer.py
-- run: python demo.simple.py
-
-## How to build & run deep layer neural network
-- install tensorflow
-- run: python deep_layer.py
-- run: pthont demo.deep.py
+- run: python mnist.py
+- run: python demo.py

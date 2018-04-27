@@ -1,8 +1,9 @@
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import matplotlib.patches as patches
-import model_data as model
+import mnist, math
 
 image_width = 28
 image_height = 28
@@ -10,9 +11,9 @@ image = np.zeros(shape=(image_height, image_width))
 image_1d = np.zeros(shape=(1, image_height * image_width))
 gray = 0.9
 isMouseDown = False
+sess = tf.InteractiveSession()
 
 def UpdateImage(x, y):
-    #print("x:{0}, y:{1}".format(x, y))
     if(type(x) == None.__class__ or type(x) == None.__class__):
         return
     x = int(round(x))
@@ -23,16 +24,16 @@ def UpdateImage(x, y):
 
     axes.add_patch(patches.Rectangle((x , y), 3, 3))
     plt.draw()
-    
+
     image[image_y][x] = image[image_y][x + 1] = image[image_y][x + 2] = gray
     image[image_y - 1][x] = image[image_y - 1][x + 1] = image[image_y - 1][x + 2] = gray    
     image[image_y - 2 ][x] = image[image_y - 2][x + 1] = image[image_y - 2][x + 2] = gray
     
-def UpdateUI(result):
+def update_figure(result):
     if result == -1:
-        plt.title("")
+        axes.set_xlabel("")
     else:
-        plt.title("{0}".format(result), fontsize = 40, color = 'red')
+        axes.set_xlabel("Predict: {0}".format(result))
     plt.draw()
 
 def OnClick(event):
@@ -46,24 +47,28 @@ def OnRelease(event):
     if event.button == 3: # right
         image = np.zeros(shape=(image_height, image_width))
         reset_axis(axes)
-        UpdateUI(-1)
+        update_figure(-1)
     if event.button == 1: # left
         isMouseDown = False;
         recognize()
     image_1d = image.ravel()
-    #print("---------------------------------------------------\n{0}\nlength = {1}".format(image, len(image)))
-    #print("---------------------------------------------------\n{0}\nlength = {1}".format(image_1d, len(image_1d)))
-    
+
 def OnMotion(event):
     global isMouseDown
     if (isMouseDown):
        UpdateImage(event.xdata, event.ydata)
-       UpdateUI(-1)
+       update_figure(-1)
 
 def recognize():
-    global image_1d
-    result = np.dot(image_1d, model.weight) + model.bias
-    UpdateUI(np.argmax(result))
+    x = tf.constant(image_1d, dtype = tf.float32)
+    x_2d = tf.reshape(x, [-1, 28, 28, 1], name = 'x_image_2d')
+    conv_out = mnist.conv_layer(x_2d, w_conv1, b_conv1)
+    fc1_out = mnist.fc_layer(tf.reshape(conv_out, [-1, 7 * 7 * 64]), w_fc1, b_fc1)
+    relu = tf.nn.relu(fc1_out)
+    logits = mnist.fc_layer(relu, w_fc2, b_fc2)
+    update_figure(sess.run(tf.argmax(logits, 1)))
+
+    plot_conv_cout(conv_out)
 
 def reset_axis(axes):
     plt.cla()
@@ -75,9 +80,36 @@ def reset_axis(axes):
     axes.set_ylim(-image_height, 0)
     axes.yaxis.set_major_locator(MultipleLocator(4))
     axes.yaxis.set_minor_locator(MultipleLocator(1))
-    axes.yaxis.grid(True, which='minor') 
+    axes.yaxis.grid(True, which='minor')
 
-fig = plt.figure()
+def plot_conv_cout(values):
+    values = sess.run(values)
+    num_filters = values.shape[3]
+    num_grids = math.ceil(math.sqrt(num_filters))
+
+    _, axes = plt.subplots(num_grids, num_grids)
+    for i, ax in enumerate(axes.flat):
+        if i < num_filters:
+            img = values[0, :, :, i]
+            ax.imshow(img, interpolation='nearest', cmap='gray')
+        ax.set_xticks([]); ax.set_yticks([])
+    plt.figure(2).canvas.set_window_title('Output of Conv layer')
+    plt.show()
+
+with tf.name_scope("conv"):
+    w_conv1 = tf.Variable(tf.zeros([5, 5, 1, 16]), name = "W")
+    b_conv1 = tf.Variable(tf.zeros([16]), name = "B")
+with tf.name_scope("fc1"):
+    w_fc1 = tf.Variable(tf.zeros([7 * 7 * 64, 1024]), name = "W")
+    b_fc1 = tf.Variable(tf.zeros([1024]), name = "B")
+with tf.name_scope("fc2"):
+    w_fc2 = tf.Variable(tf.zeros([1024, 10]), name = "W")
+    b_fc2 = tf.Variable(tf.zeros([10]), name = "B")
+
+saver = tf.train.Saver()
+saver.restore(sess, mnist.LOGDIR + "model.ckpt")
+
+fig = plt.figure('Input')
 fig.canvas.mpl_connect('button_press_event', OnClick)
 fig.canvas.mpl_connect('button_release_event', OnRelease)
 fig.canvas.mpl_connect('motion_notify_event', OnMotion)
