@@ -29,18 +29,21 @@ def fc_layer(input, weight, bias):
 
 def build_model(x, y):
   with tf.name_scope("input"):
-    x_image = tf.reshape(x, [-1, 28, 28, 1])
-    tf.summary.image('image', x_image, 1)
+    image_2d = tf.reshape(x, [-1, 28, 28, 1])
+    tf.summary.image('image', image_2d, 1)
 
   with tf.name_scope("conv"):
     w = tf.Variable(tf.truncated_normal([5, 5, 1, 16], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[16]), name="B")
-    conv_out = conv_layer(x_image, w, b)
+    conv = conv_layer(image_2d, w, b)
+
+    features = conv.get_shape()[1:4].num_elements()
+    flatten_conv = tf.reshape(conv, [-1, features])
 
   with tf.name_scope("fc1"):
-    w = tf.Variable(tf.truncated_normal([7 * 7 * 64, 1024], stddev=0.1), name="W")
+    w = tf.Variable(tf.truncated_normal([features, 1024], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[1024]), name="B")
-    fc1 = fc_layer(tf.reshape(conv_out, [-1, 7 * 7 * 64]), w, b)
+    fc1 = fc_layer(flatten_conv, w, b)
     relu = tf.nn.relu(fc1)
     tf.summary.histogram("relu", relu)
 
@@ -70,7 +73,7 @@ if __name__ == '__main__':
   tf.reset_default_graph()
   sess = tf.Session()
 
-  x = tf.placeholder(tf.float32, shape=[None, 784], name="x")
+  x = tf.placeholder(tf.float32, shape=[None, 28 * 28], name="x")
   y = tf.placeholder(tf.float32, shape=[None, 10], name="labels")
   (train_step, accuracy) = build_model(x, y)
 
