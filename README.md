@@ -2,10 +2,15 @@
 Recognize handwritten digits in real time.
 
 ## Working like this:
-![python](mnist.gif)
+![Demo](doc/demo.gif)
 
 ## Show all detail of CNN layer
-![Output](output.png)
+![Output](doc/output.png)
+
+## Full tensorboard support:
+![scalars](doc/scalars.png)
+![graph](doc/graph.png)
+![histogram](doc/histogram.png)
 
 ## Quick start
 - install python
