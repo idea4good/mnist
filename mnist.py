@@ -14,10 +14,15 @@ def conv_layer(input, weight, bias):
   tf.summary.histogram("weights", weight)
   tf.summary.histogram("biases", bias)
   tf.summary.histogram("activations", act)
+
+  print('-----------')
+  print(weight.get_shape())
+  print(ret.get_shape())
+  print('-----------')
   for i in range(weight.shape[3]):
-      tf.summary.image("conv_weight", tf.reshape(weight[:, :, 0, i], [-1, weight.shape[0], weight.shape[1], 1]), 1)
+      tf.summary.image("weight", tf.reshape(weight[:, :, 0, i], [-1, weight.shape[0], weight.shape[1], 1]), 1)
   for i in range(ret.shape[3]):
-      tf.summary.image("conv_output", tf.reshape(ret[0, :, :, i], [-1, ret.shape[1], ret.shape[2], 1]), 1)
+      tf.summary.image("output", tf.reshape(ret[0, :, :, i], [-1, ret.shape[1], ret.shape[2], 1]), 1)
   return ret
 
 def fc_layer(input, weight, bias):
@@ -32,10 +37,16 @@ def build_model(x, y):
     image_2d = tf.reshape(x, [-1, 28, 28, 1])
     tf.summary.image('image', image_2d, 1)
 
-  with tf.name_scope("conv"):
+  with tf.name_scope("conv1"):
     w = tf.Variable(tf.truncated_normal([5, 5, 1, 16], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[16]), name="B")
     conv = conv_layer(image_2d, w, b)
+
+  # Delete these block for single conv layer
+  with tf.name_scope("conv2"):
+    w = tf.Variable(tf.truncated_normal([5, 5, 16, 36], stddev=0.1), name="W")
+    b = tf.Variable(tf.constant(0.1, shape=[36]), name="B")
+    conv = conv_layer(conv, w, b)
 
     features = conv.get_shape()[1:4].num_elements()
     flatten_conv = tf.reshape(conv, [-1, features])
