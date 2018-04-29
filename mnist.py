@@ -1,6 +1,3 @@
-import os
-import os.path
-import shutil, math
 import tensorflow as tf
 
 LOGDIR = "logs/"
@@ -14,15 +11,13 @@ def conv_layer(input, weight, bias):
   tf.summary.histogram("weights", weight)
   tf.summary.histogram("biases", bias)
   tf.summary.histogram("activations", act)
-
-  print('-----------')
-  print(weight.get_shape())
-  print(ret.get_shape())
-  print('-----------')
-  for i in range(weight.shape[3]):
-      tf.summary.image("weight", tf.reshape(weight[:, :, 0, i], [-1, weight.shape[0], weight.shape[1], 1]), 1)
+  '''Too much images here. 16 images for conv layer 1; 16*36 for conv layer 2.
+  for i_2 in range(weight.shape[2]):
+    for i_3 in range(weight.shape[3]):
+      tf.summary.image("weight", tf.reshape(weight[:, :, i_2, i_3], [-1, weight.shape[0], weight.shape[1], 1]), 1)
+  '''
   for i in range(ret.shape[3]):
-      tf.summary.image("output", tf.reshape(ret[0, :, :, i], [-1, ret.shape[1], ret.shape[2], 1]), 1)
+    tf.summary.image("output", tf.reshape(ret[0, :, :, i], [-1, ret.shape[1], ret.shape[2], 1]), 1)
   return ret
 
 def fc_layer(input, weight, bias):
@@ -48,7 +43,7 @@ def build_model(x, y):
     b = tf.Variable(tf.constant(0.1, shape=[36]), name="B")
     conv = conv_layer(conv, w, b)
 
-    features = conv.get_shape()[1:4].num_elements()
+    features = conv.get_shape()[1:4].num_elements()# 7 * 7 * 36, will be used in demo.py
     flatten_conv = tf.reshape(conv, [-1, features])
 
   with tf.name_scope("fc1"):

@@ -62,13 +62,19 @@ def OnMotion(event):
 def recognize():
     x = tf.constant(image_1d, dtype = tf.float32)
     x_2d = tf.reshape(x, [-1, 28, 28, 1], name = 'x_image_2d')
-    conv_out = mnist.conv_layer(x_2d, w_conv1, b_conv1)
-    fc1_out = mnist.fc_layer(tf.reshape(conv_out, [-1, 7 * 7 * 64]), w_fc1, b_fc1)
+
+    conv_out1 = mnist.conv_layer(x_2d, w_conv1, b_conv1)
+    conv_out2 = mnist.conv_layer(conv_out1, w_conv2, b_conv2)
+    features = conv_out2.get_shape()[1:4].num_elements()
+    flatten_conv = tf.reshape(conv_out2, [-1, features])
+
+    fc1_out = mnist.fc_layer(flatten_conv, w_fc1, b_fc1)
     relu = tf.nn.relu(fc1_out)
     logits = mnist.fc_layer(relu, w_fc2, b_fc2)
-    update_figure(sess.run(tf.argmax(logits, 1)))
 
-    plot_conv_cout(conv_out)
+    update_figure(sess.run(tf.argmax(logits, 1)))
+    plot_conv_cout(conv_out1, 2, 'conv layer 1')
+    plot_conv_cout(conv_out2, 3, 'conv layer 2')
 
 def reset_axis(axes):
     plt.cla()
@@ -82,7 +88,7 @@ def reset_axis(axes):
     axes.yaxis.set_minor_locator(MultipleLocator(1))
     axes.yaxis.grid(True, which='minor')
 
-def plot_conv_cout(values):
+def plot_conv_cout(values, index, title):
     values = sess.run(values)
     num_filters = values.shape[3]
     num_grids = math.ceil(math.sqrt(num_filters))
@@ -93,14 +99,17 @@ def plot_conv_cout(values):
             img = values[0, :, :, i]
             ax.imshow(img, interpolation='nearest', cmap='gray')
         ax.set_xticks([]); ax.set_yticks([])
-    plt.figure(2).canvas.set_window_title('Output of Conv layer')
+    plt.figure(index).canvas.set_window_title(title)
     plt.show()
 
-with tf.name_scope("conv"):
+with tf.name_scope("conv1"):
     w_conv1 = tf.Variable(tf.zeros([5, 5, 1, 16]), name = "W")
     b_conv1 = tf.Variable(tf.zeros([16]), name = "B")
+with tf.name_scope("conv2"):
+    w_conv2 = tf.Variable(tf.zeros([5, 5, 16, 36]), name = "W")
+    b_conv2 = tf.Variable(tf.zeros([36]), name = "B")
 with tf.name_scope("fc1"):
-    w_fc1 = tf.Variable(tf.zeros([7 * 7 * 64, 1024]), name = "W")
+    w_fc1 = tf.Variable(tf.zeros([7 * 7 * 36, 1024]), name = "W")
     b_fc1 = tf.Variable(tf.zeros([1024]), name = "B")
 with tf.name_scope("fc2"):
     w_fc2 = tf.Variable(tf.zeros([1024, 10]), name = "W")
