@@ -13,7 +13,7 @@ Recognize handwritten digits in real time.
 ![histogram](doc/histogram.png)
 
 ## Quick start
-- install python
+- install python 3.6
 - install python packages: numpy matplotlib
 - install tensorflow
 - run: python mnist.py
