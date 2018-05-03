@@ -16,5 +16,5 @@ Recognize handwritten digits in real time.
 - install python 3.6
 - install python packages: numpy matplotlib
 - install tensorflow
-- run: python mnist.py
-- run: python demo.py
+- training model: python mnist.py
+- using model: python demo.py
