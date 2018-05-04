@@ -36,14 +36,16 @@ def build_model(x, y):
     w = tf.Variable(tf.truncated_normal([5, 5, 1, 16], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[16]), name="B")
     conv = conv_layer(image_2d, w, b)
+    tf.add_to_collection('conv1_op', conv)
 
   # Delete these block for single conv layer
   with tf.name_scope("conv2"):
     w = tf.Variable(tf.truncated_normal([5, 5, 16, 36], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[36]), name="B")
     conv = conv_layer(conv, w, b)
+    tf.add_to_collection('conv2_op', conv)
 
-    features = conv.get_shape()[1:4].num_elements()# 7 * 7 * 36, will be used in demo.py
+    features = conv.get_shape()[1:4].num_elements()# 7 * 7 * 36, will be used in demo1.py
     flatten_conv = tf.reshape(conv, [-1, features])
 
   with tf.name_scope("fc1"):
@@ -57,6 +59,7 @@ def build_model(x, y):
     w = tf.Variable(tf.truncated_normal([1024, 10], stddev=0.1), name="W")
     b = tf.Variable(tf.constant(0.1, shape=[10]), name="B")
     logits = fc_layer(relu, w, b)
+    tf.add_to_collection('predict_op', logits)
     tf.summary.histogram("predict", tf.argmax(logits[0], 0))
 
   with tf.name_scope("loss"):
